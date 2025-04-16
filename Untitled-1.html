@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro y Login</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f1115;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #ffffff;
+    }
+
+    .container {
+      background: #1a1c22;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      max-width: 180px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    input {
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 10px;
+      background: #2c2f36;
+      color: white;
+    }
+
+    button {
+      background-color: #7aff3d;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #63db2f;
+    }
+
+    .success {
+      color: #7aff3d;
+      text-align: center;
+    }
+
+    .error {
+      color: #ff4b4b;
+      text-align: center;
+    }
+
+    .switch {
+      margin-top: 20px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 14px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="./blockcerts.png" alt="Bloxtek logo">
+    </div>
+    <h2 id="formTitle">Registro</h2>
+    <form id="registerForm">
+      <input type="text" id="regName" placeholder="Nombre" required />
+      <input type="email" id="regEmail" placeholder="Correo Electrónico" required />
+      <input type="password" id="regPassword" placeholder="Contraseña" required />
+      <button type="submit">Registrarse</button>
+      <p id="registerMessage"></p>
+    </form>
+
+    <form id="loginForm" style="display: none;">
+      <input type="email" id="loginEmail" placeholder="Correo Electrónico" required />
+      <input type="password" id="loginPassword" placeholder="Contraseña" required />
+      <button type="submit">Iniciar Sesión</button>
+      <p id="loginMessage"></p>
+    </form>
+
+    <div class="switch" onclick="toggleForms()">¿Ya tienes cuenta? Inicia sesión</div>
+  </div>
+
+  <script>
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validatePassword(password) {
+      return password.length >= 6;
+    }
+
+    function toggleForms() {
+      const registerForm = document.getElementById('registerForm');
+      const loginForm = document.getElementById('loginForm');
+      const switchText = document.querySelector('.switch');
+      const title = document.getElementById('formTitle');
+
+      if (registerForm.style.display === 'none') {
+        registerForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        switchText.textContent = '¿Ya tienes cuenta? Inicia sesión';
+        title.textContent = 'Registro';
+      } else {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        switchText.textContent = '¿No tienes cuenta? Regístrate';
+        title.textContent = 'Login';
+      }
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('regName').value;
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      const message = document.getElementById('registerMessage');
+
+      if (!validateEmail(email)) {
+        message.textContent = 'Correo inválido';
+        message.className = 'error';
+        return;
+      }
+
+      if (!validatePassword(password)) {
+        message.textContent = 'La contraseña debe tener al menos 6 caracteres';
+        message.className = 'error';
+        return;
+      }
+
+      if (users.some(u => u.email === email)) {
+        message.textContent = 'Ya existe un usuario con este correo';
+        message.className = 'error';
+        return;
+      }
+
+      users.push({ name, email, password });
+      localStorage.setItem('users', JSON.stringify(users));
+      message.textContent = 'Registro exitoso';
+      message.className = 'success';
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const message = document.getElementById('loginMessage');
+
+      const user = users.find(u => u.email === email && u.password === password);
+
+      if (user) {
+        message.textContent = `Bienvenido, ${user.name}`;
+        message.className = 'success';
+      } else {
+        message.textContent = 'Correo o contraseña incorrectos';
+        message.className = 'error';
+      }
+    });
+  </script>
+</body>
+</html>
